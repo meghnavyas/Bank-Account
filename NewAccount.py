@@ -21,6 +21,8 @@ Revision History:
         9. Added dunders for relatinal operators to compare the two account objects
        10. Added dunders for len, getitem, and str methods
        11. Added dunders for iter, next, call, repr, reversed
+       12. Added a context manager class TransactionWriter
+       13. Added __enter__ & __exit__ to implement passbook functionality using a file
 *******************************************************************************/
 '''
 
@@ -71,9 +73,7 @@ class Account:
     def __del__(self):
         print("Deleted account no. ", self._acc_number)
 
-    '''
-        Read-only properties for Account attributes
-    '''
+    # Read-only properties for Account attributes
     @property
     def number(self):
         return self._acc_number
@@ -204,6 +204,39 @@ class Account:
         return list(reversed(self._transactions_log))
 
 
+class TransactionWriter:
+    '''
+       TRANSACTION WRITER
+        -> A class to implement the passbook functionality for a bank account
+        -> Makes use of context manager to use a file resource to write into it 
+            all the transaction logs
+    '''
+
+    # Constructor
+    def __init__(self, name, mode):
+        self.file = None
+        self.file_name = name
+        self.file_mode = mode
+
+    # Called on entering the runtime context
+    def __enter__(self):
+
+        # Open a file with the user given attributes and return it
+        self.file = open(self.file_name, self.file_mode)
+        print("File open successful!")
+        return self.file
+
+    # Called on exiting the runtime context
+    def __exit__(self, exc_type, exc_value, exc_tb):
+
+        # Check for any exceptions, if not close the file
+        if exc_type == None:
+            self.file.close()
+            print("File close successful!")
+        else:
+            print("Something went wrong! ", exc_type)
+
+
 # Driver code
 if __name__ == "__main__":
 
@@ -212,6 +245,7 @@ if __name__ == "__main__":
     accountA += 500.00
     accountA -= 3000.00
     accountA += 1000.00
+    accountA -= 2000.00
     accountA.print_cust_details()
 
     accountB = Account("Meghna", 5000.00)
@@ -241,3 +275,10 @@ if __name__ == "__main__":
 
     print("List of transactions in reverse order: ")
     print(reversed(accountA))
+
+    # Now updating the accountA's passbook
+    # Calling the runtime context using 'with'
+    with TransactionWriter('passbookA.txt', 'w') as passbook:
+        for txn in accountA:
+            passbook.write(str(txn))
+            passbook.write('\n')
