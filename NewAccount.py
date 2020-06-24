@@ -198,7 +198,8 @@ class Account:
         self.print_cust_details()
 
     def __repr__(self):
-        return "Account no. {}, owned by {} has a balance of Rs. {}".format(self._acc_number, self._holders_name, self._balance)
+        return "Account({!r}, {!r}, {!r})".format(self._acc_number,
+                                                  self._holders_name, self._balance)
 
     def __reversed__(self):
         return list(reversed(self._transactions_log))
